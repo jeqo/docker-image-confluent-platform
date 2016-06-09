@@ -1,0 +1,45 @@
+- hosts: 127.0.0.1
+  connection: local
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: create container
+      docker:
+        name: tmp-confluent
+        image: "{{ base_image }}"
+        command: sleep infinity
+        state: started
+
+    - add_host:
+        name: tmp-confluent
+        groups: docker
+        ansible_connection: docker
+
+- hosts: tmp-confluent
+  connection: docker
+  pre_tasks:
+    - package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - sudo
+        - netcat
+  roles:
+    - role: jeqo.confluent-platform
+      confluent_version: 3.0
+      confluent_release: 3.0.0
+      confluent_scala_version: 2.11
+
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: docker commit
+      command: "docker commit tmp-confluent tmp-confluent"
+
+    - name: docker kill
+      command: "docker kill tmp-confluent"
+
+    - name: docker rm
+      command: "docker rm tmp-confluent"
+
+- include: build.yml

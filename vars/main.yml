@@ -1,0 +1,3 @@
+base_image: java:8-jdk
+image_name: jeqo/confluent-platform
+tag: 3.0.0-jdk8
