@@ -1,13 +1,6 @@
-FROM tmp-confluent
+FROM jeqo/confluent-platform:3.0.0-jdk8
 
 MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
-
-USER kafka
-
-ENV CONFLUENT_HOME=/opt/confluent/confluent-3.0.0 \
-    PATH=$PATH:$CONFLUENT_HOME/bin
-
-WORKDIR $CONFLUENT_HOME
 
 ADD server.properties ./etc/kafka/server-docker.properties
 

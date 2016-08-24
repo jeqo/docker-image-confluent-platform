@@ -1,18 +1,11 @@
-FROM tmp-confluent
+FROM jeqo/confluent-platform:3.0.0-jdk8
 
 MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
-
-USER kafka
-
-ENV CONFLUENT_HOME=/opt/confluent/confluent-3.0.0 \
-    PATH=$PATH:$CONFLUENT_HOME/bin
-
-WORKDIR $CONFLUENT_HOME
 
 ADD schema-registry.properties ./etc/schema-registry/schema-registry-docker.properties
 
 # Ports being exposed
-EXPOSE 2181
+EXPOSE 8081
 
 # Start asadmin console and the domain
 CMD [ \
