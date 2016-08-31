@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    k8s-app: confluent
+  name: confluent
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    k8s-app: confluent
+  template:
+    metadata:
+      labels:
+        k8s-app: confluent
+    spec:
+      containers:
+      - image: jeqo/confluent-platform-kafka:3.0.0
+        env:
+        - name: ZOOKEEPER_HOST
+          value: confluent
+        - name: ZOOKEEPER_PORT
+          value: "2181"
+        imagePullPolicy: "Always"
+        name: kafka
+        ports:
+        - containerPort: 9092
+          name: kafka
+          protocol: TCP
+        resources: {}
+      - image: jeqo/confluent-platform-schema-registry:3.0.0
+        env:
+        - name: ZOOKEEPER_HOST
+          value: confluent
+        - name: ZOOKEEPER_PORT
+          value: "2181"
+        imagePullPolicy: "Always"
+        name: schema-registry
+        ports:
+        - containerPort: 8081
+        resources: {}
+      - image: jeqo/confluent-platform-zookeeper:3.0.0
+        imagePullPolicy: "Always"
+        name: zookeeper
+        ports:
+        - containerPort: 2181
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status:
+  replicas: 0
