@@ -1,14 +1,16 @@
-FROM jeqo/confluent-platform:3.0.0-jdk8
+FROM jeqo/confluent-platform:3.0.0
 
 MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
 
-ADD schema-registry.properties ./etc/schema-registry/schema-registry-docker.properties
+ENV ZOOKEEPER_HOST=localhost \
+    ZOOKEEPER_PORT=2181
 
-# Ports being exposed
 EXPOSE 8081
 
-# Start asadmin console and the domain
-CMD [ \
-      "sh", "-c", \
-      "while ! nc -z zookeeper 2181; do sleep 0.1; done; echo 'zookeeper is up!' && ./bin/schema-registry-start ./etc/schema-registry/schema-registry-docker.properties" \
-    ]
+USER root
+ADD docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+
+USER $CONFLUENT_USER
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD [ "schema-registry-start", "etc/schema-registry/schema-registry.properties"]

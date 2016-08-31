@@ -1,14 +1,17 @@
-FROM jeqo/confluent-platform:3.0.0-jdk8
+FROM jeqo/confluent-platform:3.0.0
 
 MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
 
-ADD server.properties ./etc/kafka/server-docker.properties
+ENV ZOOKEEPER_HOST=localhost \
+    ZOOKEEPER_PORT=2181
 
-# Ports being exposed
-EXPOSE 2181
+EXPOSE 9092
 
-# Start asadmin console and the domain
-CMD [ \
-      "sh", "-c", \
-      "while ! nc -z zookeeper 2181; do sleep 0.1; done; echo 'zookeeper is up!' && ./bin/kafka-server-start ./etc/kafka/server-docker.properties" \
-    ]
+USER root
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+
+USER $CONFLUENT_USER
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD [ "kafka-server-start", "etc/kafka/server.properties" ]

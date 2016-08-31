@@ -2,23 +2,24 @@
 version: '2'
 services:
     schema-registry:
-        image: jeqo/confluent-platform-schema-registry:3.0.0-jdk8
+        image: jeqo/confluent-platform-schema-registry:3.0.0
+        environment:
+          ZOOKEEPER_HOST: zookeeper
+          ZOOKEEPER_PORT: 2181
         ports:
           - "8081:8081"
-        depends_on:
-          - kafka
         links:
-          - zookeeper:zookeeper
-          - kafka:kafka
+          - zookeeper
     kafka:
-        image: jeqo/confluent-platform-kafka:3.0.0-jdk8
+        image: jeqo/confluent-platform-kafka:3.0.0
+        environment:
+          ZOOKEEPER_HOST: zookeeper
+          ZOOKEEPER_PORT: 2181
         ports:
           - "9092:9092"
-        depends_on:
-          - zookeeper
         links:
-          - zookeeper:zookeeper
+          - zookeeper
     zookeeper:
-        image: jeqo/confluent-platform-zookeeper:3.0.0-jdk8
+        image: jeqo/confluent-platform-zookeeper:3.0.0
         ports:
           - "2181:2181"
