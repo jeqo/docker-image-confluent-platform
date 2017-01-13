@@ -1,16 +1,19 @@
-FROM jeqo/confluent-platform:3.0.0
+FROM jeqo/confluent-platform-base
 
-MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
+ENV SCHEMA_REGISTRY_PORT 8081
+ENV ZOOKEEPER_HOST=zookeeper
+ENV ZOOKEEPER_PORT=2181
 
-ENV ZOOKEEPER_HOST=localhost \
-    ZOOKEEPER_PORT=2181
+WORKDIR $CONFLUENT_HOME
 
-EXPOSE 8081
+EXPOSE $SCHEMA_REGISTRY_PORT
 
-USER root
-ADD docker-entrypoint.sh /
+COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
 
-USER $CONFLUENT_USER
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD [ "schema-registry-start", "etc/schema-registry/schema-registry.properties"]
+
+CMD [ "bin/schema-registry-start", "etc/schema-registry/schema-registry.properties"]
+
+#HEALTHCHECK --interval=5s --timeout=3s \
+# CMD bin/kafka-topics.sh --zookeeper $ZOOKEEPER_CONNECT --list || exit 1

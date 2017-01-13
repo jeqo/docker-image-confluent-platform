@@ -1,7 +1,14 @@
-FROM jeqo/confluent-platform:3.0.0
+FROM jeqo/confluent-platform-base
 
-MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
+MAINTAINER Jorge Quilcate <quilcate.jorge@gmail.com>
 
-EXPOSE 2181
+ENV ZOOKEEPER_LOGS /tmp/zookeeper
+ENV ZOOKEEPER_PORT 2181
 
-CMD [ "zookeeper-server-start", "./etc/kafka/zookeeper.properties" ]
+WORKDIR $CONFLUENT_HOME
+
+EXPOSE $ZOOKEEPER_PORT
+
+VOLUME $ZOOKEEPER_LOGS
+
+CMD [ "bin/zookeeper-server-start", "etc/kafka/zookeeper.properties" ]

@@ -1,17 +1,22 @@
-FROM jeqo/confluent-platform:3.0.0
+FROM jeqo/confluent-platform-base
 
-MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
+ENV KAFKA_LOGS /tmp/kafka-logs
+ENV KAFKA_PORT 9092
+ENV ZOOKEEPER_CONNECT zookeeper:2181
+ENV NUM_PARTITION 1
 
-ENV ZOOKEEPER_HOST=localhost \
-    ZOOKEEPER_PORT=2181
+WORKDIR $CONFLUENT_HOME
 
-EXPOSE 9092
+EXPOSE $KAFKA_PORT
 
-USER root
+VOLUME $KAFKA_LOGS
+
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
 
-USER $CONFLUENT_USER
-
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD [ "kafka-server-start", "etc/kafka/server.properties" ]
+
+CMD ["bin/kafka-server-start", "etc/kafka/server.properties"]
+
+HEALTHCHECK --interval=5s --timeout=3s \
+ CMD bin/kafka-topics.sh --zookeeper $ZOOKEEPER_CONNECT --list || exit 1

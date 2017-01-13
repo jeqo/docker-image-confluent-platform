@@ -1,45 +1,66 @@
-- hosts: 127.0.0.1
-  connection: local
-  vars_files:
-    - vars/main.yml
+- hosts: localhost
+  vars:
+    confluent_version: 3.1
+    confluent_release: 3.1.1
+    confluent_scala_version: 2.11
   tasks:
-    - name: create container
-      docker:
-        name: tmp-confluent
-        image: "{{ base_image }}"
-        command: sleep infinity
-        state: started
+    - set_fact:
+        base_image: jeqo/confluent-platform-base
+        kafka_image: jeqo/confluent-platform-kafka:{{ confluent_release }}-{{ confluent_scala_version }}
+        zookeeper_image: jeqo/confluent-platform-zookeeper:{{ confluent_release }}-{{ confluent_scala_version }}
+        registry_image: jeqo/confluent-platform-schema-registry:{{ confluent_release }}-{{ confluent_scala_version }}
 
-    - add_host:
-        name: tmp-confluent
-        groups: docker
-        ansible_connection: docker
+    - name: building {{ base_image }}
+      docker_image:
+        name: "{{ base_image }}"
+        path: .
+        buildargs:
+          confluent_version: "{{ confluent_version }}"
+          confluent_release: "{{ confluent_release }}"
+          confluent_scala_version: "{{ confluent_scala_version }}"
+        force: yes
+        nocache: yes
+        push: no
+      register: result
 
-- hosts: tmp-confluent
-  connection: docker
-  pre_tasks:
-    - package:
-        name: "{{ item }}"
-        state: latest
-      with_items:
-        - sudo
-        - netcat
-  roles:
-    - role: jeqo.confluent-platform
-      confluent_version: 3.0
-      confluent_release: 3.0.0
-      confluent_scala_version: 2.11
+    - debug:
+        var: result
 
-- hosts: 127.0.0.1
-  connection: local
-  tasks:
-    - name: docker commit
-      command: "docker commit tmp-confluent tmp-confluent"
+    - name: building {{ kafka_image }}
+      docker_image:
+        name: "{{ kafka_image }}"
+        path: kafka
+        force: yes
+        nocache: yes
+        push: yes
+        pull: no
+      register: result
 
-    - name: docker kill
-      command: "docker kill tmp-confluent"
+    - debug:
+        var: result
 
-    - name: docker rm
-      command: "docker rm tmp-confluent"
+    - name: building {{ zookeeper_image }}
+      docker_image:
+        name: "{{ zookeeper_image }}"
+        path: zookeeper
+        force: yes
+        nocache: yes
+        push: yes
+        pull: no
+      register: result
 
-- include: build.yml
+    - debug:
+        var: result
+
+    - name: building {{ registry_image }}
+      docker_image:
+        name: "{{ registry_image }}"
+        path: schema-registry
+        force: yes
+        nocache: yes
+        push: yes
+        pull: no
+      register: result
+
+    - debug:
+        var: result

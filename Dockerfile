@@ -2,28 +2,23 @@ FROM java:8-jre
 
 MAINTAINER Jorge Quilcate <jorge.quilcate@sysco.no>
 
-ENV CONFLUENT_HOME=/opt/confluent \
-    CONFLUENT_USER=confluent \
-    CONFLUENT_GROUP=confluent
+ARG confluent_version
+ARG confluent_release
+ARG confluent_scala_version
+ARG confluent_base_url
 
-ENV CONFLUENT_VERSION=3.0 \
-    CONFLUENT_RELEASE=3.0.0 \
-    CONFLUENT_PKG_NAME=confluent-3.0.0-2.11
+# http://packages.confluent.io/archive/3.1/confluent-oss-3.1.1-2.11.tar.gz
 
-RUN apt-get update && apt-get install netcat -y
+ENV CONFLUENT_VERSION ${confluent_version:-3.1}
+ENV CONFLUENT_RELEASE ${confluent_release:-3.1.1}
+ENV CONFLUENT_SCALA_VERSION ${confluent_scala_version:-2.11}
 
-RUN groupadd -r $CONFLUENT_GROUP && \
-    useradd -r -g $CONFLUENT_GROUP $CONFLUENT_USER
+ENV CONFLUENT_HOME=/opt/confluent
+ENV CONFLUENT_BASE_URL ${confluent_base_url:-http://packages.confluent.io}
+ENV CONFLUENT_URL "$CONFLUENT_BASE_URL/archive/$CONFLUENT_VERSION/confluent-oss-$CONFLUENT_RELEASE-$CONFLUENT_SCALA_VERSION.tar.gz"
 
-ADD http://packages.confluent.io/archive/$CONFLUENT_VERSION/$CONFLUENT_PKG_NAME.tar.gz $CONFLUENT_PKG_NAME.tar.gz
+WORKDIR /opt
 
-RUN tar xvzf $CONFLUENT_PKG_NAME.tar.gz && \
-    rm -f $CONFLUENT_PKG_NAME.tar.gz && \
-    mv confluent-$CONFLUENT_RELEASE $CONFLUENT_HOME && \
-    chown -R $CONFLUENT_USER:$CONFLUENT_GROUP $CONFLUENT_HOME
-
-ENV PATH=$CONFLUENT_HOME/bin:$PATH
-
-USER $CONFLUENT_USER
-
-WORKDIR $CONFLUENT_HOME
+RUN echo $CONFLUENT_URL
+RUN wget -O - $CONFLUENT_URL | tar zxf - && \
+    mv /opt/confluent-$CONFLUENT_RELEASE $CONFLUENT_HOME
