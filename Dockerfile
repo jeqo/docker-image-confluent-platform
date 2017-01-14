@@ -7,8 +7,6 @@ ARG confluent_release
 ARG confluent_scala_version
 ARG confluent_base_url
 
-# http://packages.confluent.io/archive/3.1/confluent-oss-3.1.1-2.11.tar.gz
-
 ENV CONFLUENT_VERSION ${confluent_version:-3.1}
 ENV CONFLUENT_RELEASE ${confluent_release:-3.1.1}
 ENV CONFLUENT_SCALA_VERSION ${confluent_scala_version:-2.11}

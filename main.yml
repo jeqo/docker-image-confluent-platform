@@ -3,12 +3,15 @@
     confluent_version: 3.1
     confluent_release: 3.1.1
     confluent_scala_version: 2.11
+    push: no
+    nocache: no
   tasks:
     - set_fact:
         base_image: jeqo/confluent-platform-base
         kafka_image: jeqo/confluent-platform-kafka:{{ confluent_release }}-{{ confluent_scala_version }}
         zookeeper_image: jeqo/confluent-platform-zookeeper:{{ confluent_release }}-{{ confluent_scala_version }}
         registry_image: jeqo/confluent-platform-schema-registry:{{ confluent_release }}-{{ confluent_scala_version }}
+        client_image: jeqo/confluent-platform-client:{{ confluent_release }}-{{ confluent_scala_version }}
 
     - name: building {{ base_image }}
       docker_image:
@@ -31,8 +34,8 @@
         name: "{{ kafka_image }}"
         path: kafka
         force: yes
-        nocache: yes
-        push: yes
+        nocache: "{{ nocache }}"
+        push: "{{ push }}"
         pull: no
       register: result
 
@@ -44,8 +47,8 @@
         name: "{{ zookeeper_image }}"
         path: zookeeper
         force: yes
-        nocache: yes
-        push: yes
+        nocache: "{{ nocache }}"
+        push: "{{ push }}"
         pull: no
       register: result
 
@@ -57,8 +60,21 @@
         name: "{{ registry_image }}"
         path: schema-registry
         force: yes
-        nocache: yes
-        push: yes
+        nocache: "{{ nocache }}"
+        push: "{{ push }}"
+        pull: no
+      register: result
+
+    - debug:
+        var: result
+
+    - name: building {{ client_image }}
+      docker_image:
+        name: "{{ client_image }}"
+        path: client
+        force: yes
+        nocache: "{{ nocache }}"
+        push: "{{ push }}"
         pull: no
       register: result
 
